@@ -43,8 +43,12 @@ ADDRTYPE_P2PKH = 50
 ADDRTYPE_P2SH = 55
 ADDRTYPE_P2SH_ALT = 5
 ADDRTYPE_P2WPKH = 6
-XPRV_HEADER = 0x0488ade4
-XPUB_HEADER = 0x0488b21e
+#XPRV_HEADER = 0x0488ade4
+XPRV_HEADER = 0x019d9cfe #todo
+#XPUB_HEADER = 0x0488b21e
+XPUB_HEADER = 0x019da462 #todo
+XPRV_HEADER_ALT = 0x019d9cfe #todo
+XPUB_HEADER_ALT = 0x019da462 #todo
 HEADERS_URL = "https://sound.sighash.info/blockchain_headers"
 GENESIS = "ff9f1c0116d19de7c9963845e129f9ed1bfc0b376eb54fd7afa42e0d418c8bb6"
 
@@ -82,6 +86,8 @@ def set_nolnet():
 
 ################################## transactions
 
+DUST_SOFT_LIMIT = 100000
+MIN_RELAY_TX_FEE = 100000
 FEE_STEP = 10000
 MAX_FEE_RATE = 300000
 FEE_TARGETS = [25, 10, 5, 2]

@@ -51,17 +51,17 @@ DEFAULT_PORTS = {'t':'50001', 's':'50002'} # TODO
 #then gradually switch remaining nodes to e-x nodes
 
 DEFAULT_SERVERS = {
-    'mona-cce-1.coinomi.net': {'t':'5022'},
-    'mona-cce-2.coinomi.net': {'t':'5022'},
+    #'mona-cce-1.coinomi.net': {'t':'5022'},
+    #'mona-cce-2.coinomi.net': {'t':'5022'},
 
     # http://askmona.org/5288
     # https://mstdn.monappy.jp/@WakiyamaP/521192
-    'electrumx.tamami-foundation.org': {'t':'50001'},
+    'electrumx.tamami-foundation.org':DEFAULT_PORTS,
     #'153.126.146.182': {'t':'50001'},
     #'153.126.146.182':DEFAULT_PORTS,
 
     # https://mstdn.monappy.jp/@WakiyamaP/690841
-    '153.126.139.67':DEFAULT_PORTS,
+    'electrumx2.tamami-foundation.org':DEFAULT_PORTS,
 }
 
 def set_testnet():

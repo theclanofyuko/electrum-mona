@@ -173,6 +173,7 @@ class Blockchain(util.PrintError):
             pass
             #raise BaseException("insufficient proof of work: %s vs target %s" % (int('0x' + _powhash, 16), target))
 
+
     def verify_chunk(self, index, data):
         num = len(data) / 80
         prev_header = None
@@ -280,9 +281,17 @@ class Blockchain(util.PrintError):
         h = self.local_height
         return sum([self.BIP9(h-i, 2) for i in range(N)])*10000/N/100.
 
+    def bits_to_target(self, bits):
+        MM = 256*256*256
+        a = bits%MM
+        if a < 0x8000:
+            a *= 256
+        target = (a) * pow(2, 8 * (bits/MM - 3))
+        return target
+
     def get_target_dgwv3(self, index):
-        if chain is None:
-            chain = []
+
+        chain = []
 
         last = self.read_header(index-1)
         if last is None:

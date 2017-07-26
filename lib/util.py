@@ -213,12 +213,11 @@ def android_data_dir():
     PythonActivity = jnius.autoclass('org.kivy.android.PythonActivity')
     return PythonActivity.mActivity.getFilesDir().getPath() + '/data'
 
-def android_headers_path():
-    path = android_ext_dir() + '/org.electrum.electrum/blockchain_headers'
-    d = os.path.dirname(path)
+def android_headers_dir():
+    d = android_ext_dir() + '/org.electrum.electrum'
     if not os.path.exists(d):
         os.mkdir(d)
-    return path
+    return d
 
 def android_check_data_dir():
     """ if needed, move old directory to sandbox """
@@ -227,7 +226,7 @@ def android_check_data_dir():
     old_electrum_dir = ext_dir + '/electrum'
     if not os.path.exists(data_dir) and os.path.exists(old_electrum_dir):
         import shutil
-        new_headers_path = android_headers_path()
+        new_headers_path = android_headers_dir() + '/blockchain_headers'
         old_headers_path = old_electrum_dir + '/blockchain_headers'
         if not os.path.exists(new_headers_path) and os.path.exists(old_headers_path):
             print_error("Moving headers file to", new_headers_path)
@@ -236,11 +235,8 @@ def android_check_data_dir():
         shutil.move(old_electrum_dir, data_dir)
     return data_dir
 
-def get_headers_path(config):
-    if 'ANDROID_DATA' in os.environ:
-        return android_headers_path()
-    else:
-        return os.path.join(config.path, 'blockchain_headers')
+def get_headers_dir(config):
+    return android_headers_dir() if 'ANDROID_DATA' in os.environ else config.path
 
 def user_dir():
     if 'ANDROID_DATA' in os.environ:
@@ -347,7 +343,7 @@ def time_difference(distance_in_time, include_seconds):
     else:
         return "over %d years" % (round(distance_in_minutes / 525600))
 
-block_explorer_info = {
+mainnet_block_explorers = {
     'Biteasy.com': ('https://www.biteasy.com/blockchain',
                         {'tx': 'transactions', 'addr': 'addresses'}),
     'Bitflyer.jp': ('https://chainflyer.bitflyer.jp',
@@ -374,11 +370,22 @@ block_explorer_info = {
                         {'tx': 'tx', 'addr': 'address'}),
 }
 
+testnet_block_explorers = {
+    'Blocktrail.com': ('https://www.blocktrail.com/tBTC',
+                       {'tx': 'tx', 'addr': 'address'}),
+    'system default': ('blockchain:',
+                       {'tx': 'tx', 'addr': 'address'}),
+}
+
+def block_explorer_info():
+    import bitcoin
+    return testnet_block_explorers if bitcoin.TESTNET else mainnet_block_explorers
+
 def block_explorer(config):
-    return config.get('block_explorer', 'Blockchain.info')
+    return config.get('block_explorer', 'Blocktrail.com')
 
 def block_explorer_tuple(config):
-    return block_explorer_info.get(block_explorer(config))
+    return block_explorer_info().get(block_explorer(config))
 
 def block_explorer_URL(config, kind, item):
     be_tuple = block_explorer_tuple(config)
@@ -446,7 +453,7 @@ def parse_URI(uri, on_pr=None):
     r = out.get('r')
     sig = out.get('sig')
     name = out.get('name')
-    if r or (name and sig):
+    if on_pr and (r or (name and sig)):
         def get_payment_request_thread():
             import paymentrequest as pr
             if name and sig:

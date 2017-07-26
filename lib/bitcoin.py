@@ -49,7 +49,8 @@ XPUB_HEADER = 0x0488b21e
 #XPUB_HEADER = 0x019da462 #todo
 XPRV_HEADER_ALT = 0x019d9cfe #todo
 XPUB_HEADER_ALT = 0x019da462 #todo
-HEADERS_URL = "https://sound.sighash.info/blockchain_headers"
+#HEADERS_URL = "https://sound.sighash.info/blockchain_headers"
+HEADERS_URL = "http://electrumx2.tamami-foundation.org/blockchain_headers"
 GENESIS = "ff9f1c0116d19de7c9963845e129f9ed1bfc0b376eb54fd7afa42e0d418c8bb6"
 
 def set_testnet():

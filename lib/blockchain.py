@@ -32,7 +32,6 @@ import threading
 import bitcoin
 from bitcoin import *
 
-from ltc_scrypt import getPoWHash
 import lyra2re2_hash
 
 MAX_TARGET = 0x00000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
@@ -64,13 +63,6 @@ def hash_header(header):
     if header.get('prev_block_hash') is None:
         header['prev_block_hash'] = '00'*32
     return hash_encode(Hash(serialize_header(header).decode('hex')))
-
-def pow_hash_header(header):
-    height = header.get('block_height')
-    if height >= 450000:
-        return rev_hex(lyra2re2_hash.getPoWHash(serialize_header(header).decode('hex')).encode('hex'))
-    else:
-        return rev_hex(getPoWHash(serialize_header(header).decode('hex')).encode('hex'))
 
 blockchains = {}
 
@@ -159,7 +151,7 @@ class Blockchain(util.PrintError):
     def verify_header(self, header, prev_header, bits, target):
         prev_hash = hash_header(prev_header)
         _hash = hash_header(header)
-        _powhash = pow_hash_header(header)
+        _powhash = rev_hex(lyra2re2_hash.getPoWHash(serialize_header(header).decode('hex')).encode('hex'))
         if prev_hash != header.get('prev_block_hash'):
             raise BaseException("prev hash mismatch: %s vs %s" % (prev_hash, header.get('prev_block_hash')))
         if bitcoin.TESTNET:
@@ -171,8 +163,16 @@ class Blockchain(util.PrintError):
             print header.get('block_height')
             pass
             #raise BaseException("bits mismatch: %s vs %s" % (bits, header.get('bits')))
-        if int('0x' + _powhash, 16) > target:
-            raise BaseException("insufficient proof of work: %s vs target %s" % (int('0x' + _powhash, 16), target))
+        height = header.get('block_height')
+        if height >= 450000:
+            if int('0x' + _powhash, 16) > target:
+                print "lyra2rev2"
+                raise BaseException("insufficient proof of work: %s vs target %s" % (int('0x' + _powhash, 16), target))
+        else:
+            if int('0x' + _hash, 16) > target:
+                print "ltc"
+                #raise BaseException("insufficient proof of work: %s vs target %s" % (int('0x' + _hash, 16), target))
+                pass
 
 
     def verify_chunk(self, index, data):
@@ -184,9 +184,8 @@ class Blockchain(util.PrintError):
         for i in range(num):
             raw_header = data[i*80:(i+1) * 80]
             header = deserialize_header(raw_header, index*2016 + i)
-            #headers[header.get('block_height')] = header
-            #bits, target = self.get_target(index*2016 + i, headers)
-            bits, target = self.get_target(index*2016 + i)
+            headers[header.get('block_height')] = header
+            bits, target = self.get_target(index*2016 + i, headers)
             self.verify_header(header, prev_header, bits, target)
             prev_header = header
 
@@ -309,18 +308,16 @@ class Blockchain(util.PrintError):
         new_bits = c + MM * i
         return new_bits
 
-    def get_target_dgwv3(self, height):
-
-        chain = []
+    def get_target_dgwv3(self, height, chain=None):
+        if chain is None:
+            chain = []
 
         last = self.read_header(height-1)
         if last is None:
             for h in chain:
                 if h.get('height') == height-1:
                     last = h
-        print "dgwv3"
-        print height
-        print last
+
         # params
         BlockLastSolved = last
         BlockReading = last
@@ -374,8 +371,7 @@ class Blockchain(util.PrintError):
         new_bits = self.target_to_bits(bnNew)
         return new_bits, bnNew
 
-    def get_target(self, height):
-        print height
+    def get_target(self, height, chain=None):
         if bitcoin.TESTNET:
             return 0, 0
         if height == 0:
@@ -466,10 +462,11 @@ class Blockchain(util.PrintError):
         prev_hash = hash_header(previous_header)
         if prev_hash != header.get('prev_block_hash'):
             return False
+        headers = {}
+        headers[header.get('block_height')] = header
+        print height
         #bits, target = self.get_target(height / 2016) #todo
-        bits, target = self.get_target(height)
-        print "can_connect"
-        print self.get_target(height)
+        bits, target = self.get_target(height, headers)
         try:
             self.verify_header(header, previous_header, bits, target)
         except:

@@ -448,7 +448,7 @@ class Blockchain(util.PrintError):
             return new_bits, bitsBase << (8 * (bitsN-3))
         else:
             print "dgw3tuuka"
-            return self.get_target_dgwv3(height)
+            return self.get_target_dgwv3(height, chain)
 
     def can_connect(self, header, check_height=True):
         height = header['block_height']

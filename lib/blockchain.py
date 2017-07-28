@@ -152,6 +152,7 @@ class Blockchain(util.PrintError):
         prev_hash = hash_header(prev_header)
         _hash = hash_header(header)
         _powhash = rev_hex(lyra2re2_hash.getPoWHash(serialize_header(header).decode('hex')).encode('hex'))
+        height = header.get('block_height')
         if prev_hash != header.get('prev_block_hash'):
             raise BaseException("prev hash mismatch: %s vs %s" % (prev_hash, header.get('prev_block_hash')))
         if bitcoin.TESTNET:
@@ -163,7 +164,6 @@ class Blockchain(util.PrintError):
             print header.get('block_height')
             pass
             #raise BaseException("bits mismatch: %s vs %s" % (bits, header.get('bits')))
-        height = header.get('block_height')
         if height >= 450000:
             if int('0x' + _powhash, 16) > target:
                 print "lyra2rev2"
@@ -413,12 +413,11 @@ class Blockchain(util.PrintError):
             return new_bits, bitsBase << (8 * (bitsN-3))
         elif height < 450000: #todo
             print "450000zone"
-            first = self.read_header((index-1) * 2016 - 1 if index > 1 else 0)
-            last = self.read_header(index*2016 - 1)
+            # Litecoin: go back the full period unless it's the first retarget
+            first = self.read_header((height - 2016 - 1 if height > 2016 else 0))
+            last = self.read_header(height - 1)
             if last is None:
-                for h in chain:
-                    if h.get('block_height') == index*2016 - 1:
-                        last = h
+                last = chain.get(height - 1)
             assert last is not None
             # bits to target
             bits = last.get('bits')
@@ -430,6 +429,8 @@ class Blockchain(util.PrintError):
             if not (bitsBase >= 0x8000 and bitsBase <= 0x7fffff):
                 raise BaseException("Second part of bits should be in [0x8000, 0x7fffff]")
             target = bitsBase << (8 * (bitsN-3))
+            if height % 2016 != 0:
+                return bits, target
             # new target
             nActualTimespan = last.get('timestamp') - first.get('timestamp')
             nTargetTimespan = 1.1 * 24 * 60 * 60
@@ -464,7 +465,6 @@ class Blockchain(util.PrintError):
             return False
         headers = {}
         headers[header.get('block_height')] = header
-        print height
         #bits, target = self.get_target(height / 2016) #todo
         bits, target = self.get_target(height, headers)
         try:

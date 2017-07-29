@@ -159,18 +159,22 @@ class Blockchain(util.PrintError):
             return
         if bits != header.get('bits'):
             print "bits error"
+            print height
             print bits
             print header.get('bits')
             print header.get('block_height')
+            if height >= 450000:
+                raise BaseException("bits mismatch: %s vs %s" % (bits, header.get('bits')))
             pass
-            #raise BaseException("bits mismatch: %s vs %s" % (bits, header.get('bits')))
         if height >= 450000:
             if int('0x' + _powhash, 16) > target:
                 print "lyra2rev2"
+                print height
                 raise BaseException("insufficient proof of work: %s vs target %s" % (int('0x' + _powhash, 16), target))
         else:
             if int('0x' + _hash, 16) > target:
                 print "ltc"
+                print height
                 #raise BaseException("insufficient proof of work: %s vs target %s" % (int('0x' + _hash, 16), target))
                 pass
 
@@ -312,13 +316,18 @@ class Blockchain(util.PrintError):
         if chain is None:
             chain = []
 
-        last = self.read_header(height-1)
-        if last is None:
-            for h in chain:
-                if h.get('height') == height-1:
-                    last = h
+        #last = self.read_header(height - 1)
+        last = chain.get(height - 1)
+        #if last is None:
+        #    print "chain sourse use"
+        #    last = chain.get(height - 1)
+        #    for h in chain:
+        #        if h.get('height') == height - 1:
+        #            last = h
 
         # params
+        print last
+        print height
         BlockLastSolved = last
         BlockReading = last
         BlockCreating = height
@@ -331,10 +340,8 @@ class Blockchain(util.PrintError):
         PastDifficultyAveragePrev = 0
         bnNum = 0
 
-        max_target = 0x00000FFFF0000000000000000000000000000000000000000000000000000000
-
         if BlockLastSolved is None or height-1 < PastBlocksMin:
-            return 0x1e0ffff0, max_target
+            return 0x1e0fffff, MAX_TARGET
         for i in range(1, PastBlocksMax + 1):
             CountBlocks += 1
 
@@ -351,11 +358,13 @@ class Blockchain(util.PrintError):
                 nActualTimespan += Diff
             LastBlockTime = BlockReading.get('timestamp')
 
-            BlockReading = self.read_header((height-1) - CountBlocks)
-            if BlockReading is None:
-                for br in chain:
-                    if br.get('height') == (height-1) - CountBlocks:
-                        BlockReading = br
+            #BlockReading = self.read_header((height-1) - CountBlocks)
+            BlockReading = chain.get((height-1) - CountBlocks)
+            #if BlockReading is None:
+                #BlockReading = chain.get((height-1) - CountBlocks)
+                #for br in chain:
+                #    if br.get('height') == (height-1) - CountBlocks:
+                #        BlockReading = br
 
         bnNew = PastDifficultyAverage
         nTargetTimespan = CountBlocks * 60
@@ -366,16 +375,35 @@ class Blockchain(util.PrintError):
         # retarget
         bnNew *= nActualTimespan
         bnNew /= nTargetTimespan
-        bnNew = min(bnNew, max_target)
+        bnNew = min(bnNew, MAX_TARGET)
 
         new_bits = self.target_to_bits(bnNew)
+        print "dgw no"
+        print BlockLastSolved
+        print BlockReading
+        print BlockCreating
+        print nActualTimespan
+        print LastBlockTime
+        print PastBlocksMin
+        print PastBlocksMax
+        print CountBlocks
+        print PastDifficultyAverage
+        print PastDifficultyAveragePrev
+        print bnNum
+        print Diff
+        print "dgw no"
+        print "    "
         return new_bits, bnNew
 
     def get_target(self, height, chain=None):
         if bitcoin.TESTNET:
             return 0, 0
         if height == 0:
-            return 0x1e0ffff0, 0x00000FFFF0000000000000000000000000000000000000000000000000000000
+            return 0x1e0ffff0, MAX_TARGET
+        if height == 449568: #start lyra2rev2 chunk
+            return 0x1b145c09, MAX_TARGET
+        if height >= 450000 and height <= 450024 : #start lyra2rev2
+            return 0x1e0fffff, MAX_TARGET
         if height < 80000:
             print "80000zone"
             # Litecoin: go back the full period unless it's the first retarget
@@ -414,10 +442,10 @@ class Blockchain(util.PrintError):
         elif height < 450000: #todo
             print "450000zone"
             # Litecoin: go back the full period unless it's the first retarget
-            first = self.read_header((height - 2016 - 1 if height > 2016 else 0))
-            last = self.read_header(height - 1)
+            first = self.read_header((height - 2016 if height > 2016 else 0))
+            last = self.read_header(height)
             if last is None:
-                last = chain.get(height - 1)
+                last = chain.get(height)
             assert last is not None
             # bits to target
             bits = last.get('bits')
@@ -448,7 +476,7 @@ class Blockchain(util.PrintError):
             new_bits = bitsN << 24 | bitsBase
             return new_bits, bitsBase << (8 * (bitsN-3))
         else:
-            print "dgw3tuuka"
+            print "lyra2&dgw zone"
             return self.get_target_dgwv3(height, chain)
 
     def can_connect(self, header, check_height=True):

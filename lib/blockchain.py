@@ -34,7 +34,7 @@ from bitcoin import *
 
 import lyra2re2_hash
 
-MAX_TARGET = 0x00000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+MAX_TARGET = 0xff9f1c0116d1a000000000000000000000000000000000000000000000000000
 
 def serialize_header(res):
     s = int_to_hex(res.get('version'), 4) \
@@ -157,27 +157,12 @@ class Blockchain(util.PrintError):
             raise BaseException("prev hash mismatch: %s vs %s" % (prev_hash, header.get('prev_block_hash')))
         if bitcoin.TESTNET:
             return
+        if height < 450000 and height > 0:
+            return
         if bits != header.get('bits'):
-            print "bits error"
-            print height
-            print bits
-            print header.get('bits')
-            print header.get('block_height')
-            if height >= 450000:
-                raise BaseException("bits mismatch: %s vs %s" % (bits, header.get('bits')))
-            pass
-        if height >= 450000:
-            if int('0x' + _powhash, 16) > target:
-                print "lyra2rev2"
-                print height
-                raise BaseException("insufficient proof of work: %s vs target %s" % (int('0x' + _powhash, 16), target))
-        else:
-            if int('0x' + _hash, 16) > target:
-                print "ltc"
-                print height
-                #raise BaseException("insufficient proof of work: %s vs target %s" % (int('0x' + _hash, 16), target))
-                pass
-
+            raise BaseException("bits mismatch: %s vs %s" % (bits, header.get('bits')))        
+        if int('0x' + _powhash, 16) > target:
+            raise BaseException("insufficient proof of work: %s vs target %s" % (int('0x' + _powhash, 16), target))
 
     def verify_chunk(self, index, data):
         num = len(data) / 80
@@ -316,18 +301,11 @@ class Blockchain(util.PrintError):
         if chain is None:
             chain = {}
 
-        #last = self.read_header(height - 1)
-        last = chain.get(height - 1)
-        #if last is None:
-        #    print "chain sourse use"
-        #    last = chain.get(height - 1)
-        #    for h in chain:
-        #        if h.get('height') == height - 1:
-        #            last = h
+        last = self.read_header(height - 1)
+        if last is None:
+            last = chain.get(height - 1)
 
         # params
-        print last
-        print height
         BlockLastSolved = last
         BlockReading = last
         BlockCreating = height
@@ -341,7 +319,7 @@ class Blockchain(util.PrintError):
         bnNum = 0
 
         #thanks watanabe!! http://askmona.org/5288#res_61
-        if BlockLastSolved is None or height < 450025:
+        if BlockLastSolved is None or height-1 < 450024:
             return 0x1e0fffff, MAX_TARGET
         for i in range(1, PastBlocksMax + 1):
             CountBlocks += 1
@@ -358,25 +336,14 @@ class Blockchain(util.PrintError):
                 Diff = (LastBlockTime - BlockReading.get('timestamp'))
                 nActualTimespan += Diff
             LastBlockTime = BlockReading.get('timestamp')
-            print " "
-            print BlockReading.get('timestamp')
-            print nActualTimespan
-            print BlockReading.get('block_height')
-            print BlockReading.get('bits')
-            print CountBlocks
 
-            #BlockReading = self.read_header((height-1) - CountBlocks)
-            BlockReading = chain.get((height-1) - CountBlocks)
-            #if BlockReading is None:
-                #BlockReading = chain.get((height-1) - CountBlocks)
-                #for br in chain:
-                #    if br.get('height') == (height-1) - CountBlocks:
-                #        BlockReading = br
+            BlockReading = self.read_header((height-1) - CountBlocks)
+            if BlockReading is None:
+                BlockReading = chain.get((height-1) - CountBlocks)
 
         bnNew = PastDifficultyAverage
-        nTargetTimespan = CountBlocks * 60
+        nTargetTimespan = CountBlocks * 90
 
-        print str(nActualTimespan)+" vs "+str(nTargetTimespan)
         nActualTimespan = max(nActualTimespan, nTargetTimespan/3)
         nActualTimespan = min(nActualTimespan, nTargetTimespan*3)
 
@@ -386,22 +353,6 @@ class Blockchain(util.PrintError):
         bnNew = min(bnNew, MAX_TARGET)
 
         new_bits = self.target_to_bits(bnNew)
-        print "dgw no"
-        print "BlockLastSolved  "+str(BlockLastSolved)
-        print "BlockReading  "+str(BlockReading)
-        print "BlockCreating  "+str(BlockCreating)
-        print "nActualTimespan  "+str(nActualTimespan)
-        print "nTargetTimespan  "+str(nTargetTimespan)
-        print "LastBlockTime  "+str(LastBlockTime)
-        print "PastBlocksMin  "+str(PastBlocksMin)
-        print "PastBlocksMax  "+str(PastBlocksMax)
-        print "CountBlocks  "+str(CountBlocks)
-        print "PastDifficultyAverage  "+str(PastDifficultyAverage)
-        print "PastDifficultyAveragePrev  "+str(PastDifficultyAveragePrev)
-        print "bnNum  "+str(bnNum)
-        print "Diff  "+str(Diff)
-        print "dgw no"
-        print "    "
         return new_bits, bnNew
 
     def get_target(self, height, chain=None):
@@ -409,82 +360,10 @@ class Blockchain(util.PrintError):
             return 0, 0
         if height == 0:
             return 0x1e0ffff0, MAX_TARGET
-        if height == 449568: #start lyra2rev2 chunk
-            return 0x1b145c09, MAX_TARGET
-        if height < 80000:
-            print "80000zone"
-            # Litecoin: go back the full period unless it's the first retarget
-            first = self.read_header((height - 2016 - 1 if height > 2016 else 0))
-            last = self.read_header(height - 1)
-            if last is None:
-                last = chain.get(height - 1)
-            assert last is not None
-            # bits to target
-            bits = last.get('bits')
-            bitsN = (bits >> 24) & 0xff
-            if not (bitsN >= 0x03 and bitsN <= 0x1e):
-                raise BaseException("First part of bits should be in [0x03, 0x1e]")
-            bitsBase = bits & 0xffffff
-            if not (bitsBase >= 0x8000 and bitsBase <= 0x7fffff):
-                raise BaseException("Second part of bits should be in [0x8000, 0x7fffff]")
-            target = bitsBase << (8 * (bitsN-3))
-            if height % 2016 != 0:
-                return bits, target
-            # new target
-            nActualTimespan = last.get('timestamp') - first.get('timestamp')
-            nTargetTimespan = 1.1 * 24 * 60 * 60
-            nActualTimespan = max(nActualTimespan, nTargetTimespan / 4)
-            nActualTimespan = min(nActualTimespan, nTargetTimespan * 4)
-            new_target = min(MAX_TARGET, (target*nActualTimespan) / nTargetTimespan)
-            # convert new target to bits
-            c = ("%064x" % new_target)[2:]
-            while c[:2] == '00' and len(c) > 6:
-                c = c[2:]
-            bitsN, bitsBase = len(c) / 2, int('0x' + c[:6], 16)
-            if bitsBase >= 0x800000:
-                bitsN += 1
-                bitsBase >>= 8
-            new_bits = bitsN << 24 | bitsBase
-            return new_bits, bitsBase << (8 * (bitsN-3))
-        elif height < 450000: #todo
-            print "450000zone"
-            # Litecoin: go back the full period unless it's the first retarget
-            first = self.read_header((height - 2016 if height > 2016 else 0))
-            last = self.read_header(height)
-            if last is None:
-                last = chain.get(height)
-            assert last is not None
-            # bits to target
-            bits = last.get('bits')
-            bitsN = (bits >> 24) & 0xff
-            if not (bitsN >= 0x03 and bitsN <= 0x1e):
-                #raise BaseException("First part of bits should be in [0x03, 0x1e]")
-                pass
-            bitsBase = bits & 0xffffff
-            if not (bitsBase >= 0x8000 and bitsBase <= 0x7fffff):
-                raise BaseException("Second part of bits should be in [0x8000, 0x7fffff]")
-            target = bitsBase << (8 * (bitsN-3))
-            if height % 2016 != 0:
-                return bits, target
-            # new target
-            nActualTimespan = last.get('timestamp') - first.get('timestamp')
-            nTargetTimespan = 1.1 * 24 * 60 * 60
-            nActualTimespan = max(nActualTimespan, nTargetTimespan / 4)
-            nActualTimespan = min(nActualTimespan, nTargetTimespan * 4)
-            new_target = min(MAX_TARGET, (target*nActualTimespan) / nTargetTimespan)
-            # convert new target to bits
-            c = ("%064x" % new_target)[2:]
-            while c[:2] == '00' and len(c) > 6:
-                c = c[2:]
-            bitsN, bitsBase = len(c) / 2, int('0x' + c[:6], 16)
-            if bitsBase >= 0x800000:
-                bitsN += 1
-                bitsBase >>= 8
-            new_bits = bitsN << 24 | bitsBase
-            return new_bits, bitsBase << (8 * (bitsN-3))
-        else:
-            print "lyra2&dgw zone"
+        if height >= 450000:
             return self.get_target_dgwv3(height, chain)
+        else:
+            return 0, 0
 
     def can_connect(self, header, check_height=True):
         height = header['block_height']

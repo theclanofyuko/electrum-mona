@@ -314,7 +314,7 @@ class Blockchain(util.PrintError):
 
     def get_target_dgwv3(self, height, chain=None):
         if chain is None:
-            chain = []
+            chain = {}
 
         #last = self.read_header(height - 1)
         last = chain.get(height - 1)
@@ -340,7 +340,8 @@ class Blockchain(util.PrintError):
         PastDifficultyAveragePrev = 0
         bnNum = 0
 
-        if BlockLastSolved is None or height-1 < PastBlocksMin:
+        #thanks watanabe!! http://askmona.org/5288#res_61
+        if BlockLastSolved is None or height < 450025:
             return 0x1e0fffff, MAX_TARGET
         for i in range(1, PastBlocksMax + 1):
             CountBlocks += 1
@@ -357,6 +358,12 @@ class Blockchain(util.PrintError):
                 Diff = (LastBlockTime - BlockReading.get('timestamp'))
                 nActualTimespan += Diff
             LastBlockTime = BlockReading.get('timestamp')
+            print " "
+            print BlockReading.get('timestamp')
+            print nActualTimespan
+            print BlockReading.get('block_height')
+            print BlockReading.get('bits')
+            print CountBlocks
 
             #BlockReading = self.read_header((height-1) - CountBlocks)
             BlockReading = chain.get((height-1) - CountBlocks)
@@ -369,6 +376,7 @@ class Blockchain(util.PrintError):
         bnNew = PastDifficultyAverage
         nTargetTimespan = CountBlocks * 60
 
+        print str(nActualTimespan)+" vs "+str(nTargetTimespan)
         nActualTimespan = max(nActualTimespan, nTargetTimespan/3)
         nActualTimespan = min(nActualTimespan, nTargetTimespan*3)
 
@@ -379,18 +387,19 @@ class Blockchain(util.PrintError):
 
         new_bits = self.target_to_bits(bnNew)
         print "dgw no"
-        print BlockLastSolved
-        print BlockReading
-        print BlockCreating
-        print nActualTimespan
-        print LastBlockTime
-        print PastBlocksMin
-        print PastBlocksMax
-        print CountBlocks
-        print PastDifficultyAverage
-        print PastDifficultyAveragePrev
-        print bnNum
-        print Diff
+        print "BlockLastSolved  "+str(BlockLastSolved)
+        print "BlockReading  "+str(BlockReading)
+        print "BlockCreating  "+str(BlockCreating)
+        print "nActualTimespan  "+str(nActualTimespan)
+        print "nTargetTimespan  "+str(nTargetTimespan)
+        print "LastBlockTime  "+str(LastBlockTime)
+        print "PastBlocksMin  "+str(PastBlocksMin)
+        print "PastBlocksMax  "+str(PastBlocksMax)
+        print "CountBlocks  "+str(CountBlocks)
+        print "PastDifficultyAverage  "+str(PastDifficultyAverage)
+        print "PastDifficultyAveragePrev  "+str(PastDifficultyAveragePrev)
+        print "bnNum  "+str(bnNum)
+        print "Diff  "+str(Diff)
         print "dgw no"
         print "    "
         return new_bits, bnNew
@@ -402,8 +411,6 @@ class Blockchain(util.PrintError):
             return 0x1e0ffff0, MAX_TARGET
         if height == 449568: #start lyra2rev2 chunk
             return 0x1b145c09, MAX_TARGET
-        if height >= 450000 and height <= 450024 : #start lyra2rev2
-            return 0x1e0fffff, MAX_TARGET
         if height < 80000:
             print "80000zone"
             # Litecoin: go back the full period unless it's the first retarget

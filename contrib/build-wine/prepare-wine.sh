@@ -64,6 +64,13 @@ $PYTHON -m pip install chardet
 $PYTHON -m pip install certifi
 $PYTHON -m pip install idna
 $PYTHON -m pip install win_inet_pton
+$PYTHON -m pip install dnspython
+$PYTHON -m pip install pyaes
+$PYTHON -m pip install ecdsa
+$PYTHON -m pip install qrcode
+$PYTHON -m pip install pbkdf2
+$PYTHON -m pip install protobuf
+$PYTHON -m pip install requests
 
 # Install setuptools
 wget -O setuptools.exe "$SETUPTOOLS_URL"

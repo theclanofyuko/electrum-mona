@@ -43,7 +43,7 @@ from interface import Connection, Interface
 import blockchain
 from version import ELECTRUM_VERSION, PROTOCOL_VERSION
 
-DEFAULT_PORTS = {'t':'50001', 's':'50002'} # TODO
+DEFAULT_PORTS = {'t':'50001', 's':'50002'}
 
 #There is a schedule to move the default list to e-x (electrumx) by Jan 2018
 #Schedule is as follows:
@@ -118,7 +118,7 @@ def parse_servers(result):
 
     return servers
 
-def filter_protocol(hostmap, protocol = 't'):
+def filter_protocol(hostmap, protocol = 's'):
     '''Filters the hostmap for those implementing protocol.
     The result is a list in serialized form.'''
     eligible = []
@@ -128,7 +128,7 @@ def filter_protocol(hostmap, protocol = 't'):
             eligible.append(serialize_server(host, port, protocol))
     return eligible
 
-def pick_random_server(hostmap = None, protocol = 't', exclude_set = set()):
+def pick_random_server(hostmap = None, protocol = 's', exclude_set = set()):
     if hostmap is None:
         hostmap = DEFAULT_SERVERS
     eligible = list(set(filter_protocol(hostmap, protocol)) - exclude_set)
@@ -183,9 +183,7 @@ class Network(util.DaemonThread):
     servers, each connected socket is handled by an Interface() object.
     Connections are initiated by a Connection() thread which stops once
     the connection succeeds or fails.
-
     Our external API:
-
     - Member functions get_header(), get_interfaces(), get_local_height(),
           get_parameters(), get_server_height(), get_status_value(),
           is_connected(), set_parameters(), stop()

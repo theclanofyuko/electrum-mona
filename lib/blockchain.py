@@ -379,7 +379,6 @@ class Blockchain(util.PrintError):
             return False
         headers = {}
         headers[header.get('block_height')] = header
-        #bits, target = self.get_target(height / 2016) #todo
         bits, target = self.get_target(height, headers)
         try:
             self.verify_header(header, previous_header, bits, target)
@@ -391,6 +390,7 @@ class Blockchain(util.PrintError):
         try:
             data = hexdata.decode('hex')
             self.verify_chunk(idx, data)
+            print idx
             #self.print_error("validated chunk %d" % idx)
             self.save_chunk(idx, data)
             return True

@@ -63,18 +63,11 @@ $PYTHON -m pip install urllib3
 $PYTHON -m pip install chardet
 $PYTHON -m pip install certifi
 $PYTHON -m pip install idna
-$PYTHON -m pip install win_inet_pton
-$PYTHON -m pip install dnspython
-$PYTHON -m pip install pyaes
-$PYTHON -m pip install ecdsa
-$PYTHON -m pip install qrcode
-$PYTHON -m pip install pbkdf2
-$PYTHON -m pip install protobuf
-$PYTHON -m pip install requests
+
 
 # Install setuptools
-wget -O setuptools.exe "$SETUPTOOLS_URL"
-wine setuptools.exe
+#wget -O setuptools.exe "$SETUPTOOLS_URL"
+#wine setuptools.exe
 
 # Install NSIS installer
 wget -q -O nsis.exe "$NSIS_URL"
@@ -104,5 +97,13 @@ wine mingw-get install mingw32-libz
 
 printf "[build]\ncompiler=mingw32\n" > $WINEPREFIX/drive_c/Python27/Lib/distutils/distutils.cfg
 
-$PYTHON -m pip install ltc_scrypt
+$PYTHON -m pip install vtc_scrypt #TODO
+$PYTHON -m pip install win_inet_pton
+$PYTHON -m pip install dnspython
+$PYTHON -m pip install pyaes
+$PYTHON -m pip install ecdsa
+$PYTHON -m pip install qrcode
+$PYTHON -m pip install pbkdf2
+$PYTHON -m pip install protobuf
+$PYTHON -m pip install requests
 $PYTHON -m pip install $LYRA2RE_HASH_PYTHON_URL

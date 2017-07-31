@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # You probably need to update only this link
-ELECTRUM_GIT_URL=git://github.com/ohac/electrum.git
+ELECTRUM_GIT_URL=git://github.com/wakiyamap/electrum.git
 BRANCH=monacoin-20170714
 NAME_ROOT=electrum-mona
 

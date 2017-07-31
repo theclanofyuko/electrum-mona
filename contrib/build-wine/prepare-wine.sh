@@ -97,7 +97,6 @@ wine mingw-get install mingw32-libz
 
 printf "[build]\ncompiler=mingw32\n" > $WINEPREFIX/drive_c/Python27/Lib/distutils/distutils.cfg
 
-$PYTHON -m pip install vtc_scrypt #TODO
 $PYTHON -m pip install win_inet_pton
 $PYTHON -m pip install dnspython
 $PYTHON -m pip install pyaes
@@ -106,4 +105,9 @@ $PYTHON -m pip install qrcode
 $PYTHON -m pip install pbkdf2
 $PYTHON -m pip install protobuf
 $PYTHON -m pip install requests
-$PYTHON -m pip install $LYRA2RE_HASH_PYTHON_URL
+
+# Install lyra2re2_hash
+wget $LYRA2RE_HASH_PYTHON_URL
+unzip master.zip
+cd lyra2re-hash-python-master
+$PYTHON setup.py build --compile=mingw32 install

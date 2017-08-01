@@ -130,7 +130,7 @@ Section
   CreateShortCut "$SMPROGRAMS\${PRODUCT_NAME}\Uninstall.lnk" "$INSTDIR\Uninstall.exe" "" "$INSTDIR\Uninstall.exe" 0
   CreateShortCut "$SMPROGRAMS\${PRODUCT_NAME}\${PRODUCT_NAME}.lnk" "$INSTDIR\electrum-mona-${PRODUCT_VERSION}.exe" "" "$INSTDIR\electrum-mona-${PRODUCT_VERSION}.exe" 0
 
-  ;Links bitcoin: URI's to Electrum
+  ;Links monacoin: URI's to Electrum
   WriteRegStr HKCU "Software\Classes\monacoin" "" "URL:monacoin Protocol"
   WriteRegStr HKCU "Software\Classes\monacoin" "URL Protocol" ""
   WriteRegStr HKCU "Software\Classes\monacoin" "DefaultIcon" "$\"$INSTDIR\electrum.ico, 0$\""

@@ -90,28 +90,21 @@ class ExchangeBase(PrintError):
         json = self.get_json('apiv2.bitcoinaverage.com', '/indices/global/ticker/BTC%s' % ccy)
         return Decimal(json['last']) * btc
 
-class BitcoinAverage(ExchangeBase):
-
-    def get_rates(self, ccy):
-        json = self.get_json('apiv2.bitcoinaverage.com', '/indices/global/ticker/short')
-        return dict([(r.replace("BTC", ""), Decimal(json[r]['last']))
-                     for r in json if r != 'timestamp'])
-
-    def history_ccys(self):
-        return ['AUD', 'BRL', 'CAD', 'CHF', 'CNY', 'EUR', 'GBP', 'IDR', 'ILS',
-                'MXN', 'NOK', 'NZD', 'PLN', 'RON', 'RUB', 'SEK', 'SGD', 'USD',
-                'ZAR']
-
-    def historical_rates(self, ccy):
-        history = self.get_csv('apiv2.bitcoinaverage.com',
-                               "/indices/global/history/BTC%s?period=alltime&format=csv" % ccy)
-        return dict([(h['DateTime'][:10], h['Average'])
-                     for h in history])
-
 class Bittrex(ExchangeBase):
     def get_rates(self, ccy):
         json = self.get_json('bittrex.com', '/api/v1.1/public/getticker?market=btc-mona')
         return {ccy: self.convert_btc_to_ccy(ccy, Decimal(json['result']['Last']))}
+
+class Bitbank(ExchangeBase):
+    def get_rates(self, ccy):
+        json = self.get_json('public.bitbank.cc', '/mona_jpy/ticker')
+        return {'JPY': Decimal(json['data']['last'])}
+
+class Zaif(ExchangeBase):
+    def get_rates(self, ccy):
+        json = self.get_json('api.zaif.jp', '/api/1/last_price/mona_jpy')
+        return {'JPY': Decimal(json['last_price'])}
+
 
 def dictinvert(d):
     inv = {}
@@ -209,7 +202,7 @@ class FxThread(ThreadJob):
         return self.config.get("currency", "EUR")
 
     def config_exchange(self):
-        return self.config.get('use_exchange', 'BitcoinAverage')
+        return self.config.get('use_exchange', 'Bittrex')
 
     def show_history(self):
         return self.is_enabled() and self.get_history_config() and self.ccy in self.exchange.history_ccys()
@@ -221,7 +214,7 @@ class FxThread(ThreadJob):
         self.on_quotes()
 
     def set_exchange(self, name):
-        class_ = globals().get(name, BitcoinAverage)
+        class_ = globals().get(name, Bittrex)
         self.print_error("using exchange", name)
         if self.config_exchange() != name:
             self.config.set_key('use_exchange', name, True)

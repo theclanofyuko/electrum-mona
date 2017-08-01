@@ -172,5 +172,11 @@
         "JPY",
         "SDG",
         "XAU"
+    ],
+    "Bitbank": [
+        "JPY"
+    ],
+    "Zaif": [
+        "JPY"
     ]
 }

@@ -157,8 +157,9 @@ class Blockchain(util.PrintError):
             raise BaseException("prev hash mismatch: %s vs %s" % (prev_hash, header.get('prev_block_hash')))
         if bitcoin.TESTNET:
             return
-        if height < 450000 and height > 0:
+        if height < 450000 and height > 0 and height % 50000 <> 0 :
             return
+        print height
         if bits != header.get('bits'):
             raise BaseException("bits mismatch: %s vs %s" % (bits, header.get('bits')))        
         if int('0x' + _powhash, 16) > target:
@@ -362,6 +363,22 @@ class Blockchain(util.PrintError):
             return 0, 0
         if height == 0:
             return 0x1e0ffff0, MAX_TARGET
+        if height == 50000:
+            return 0x1c23bdcf, MAX_TARGET
+        if height == 100000:
+            return 0x1c0d1935, MAX_TARGET
+        if height == 150000:
+            return 0x1c0c7215, MAX_TARGET
+        if height == 200000:
+            return 0x1c00caa1, MAX_TARGET
+        if height == 250000:
+            return 0x1b662f96, MAX_TARGET
+        if height == 300000:
+            return 0x1c00b806, MAX_TARGET
+        if height == 350000:
+            return 0x1b198ec0, MAX_TARGET
+        if height == 400000:
+            return 0x1b1fb776, MAX_TARGET
         if height >= 450000:
             return self.get_target_dgwv3(height, chain)
         else:

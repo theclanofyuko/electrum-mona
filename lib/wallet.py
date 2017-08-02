@@ -870,7 +870,7 @@ class Abstract_Wallet(PrintError):
         return tx
 
     def estimate_fee(self, config, size):
-        fee = int(config.fee_per_kb() * size / 1000.)
+        fee = int(config.fee_per_kb() * (1 + size / 1000))
         return fee
 
     def mktx(self, outputs, password, config, fee=None, change_addr=None, domain=None):

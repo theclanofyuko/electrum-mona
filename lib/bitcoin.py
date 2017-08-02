@@ -50,7 +50,8 @@ XPUB_HEADER = 0x0488b21e
 XPRV_HEADER_ALT = 0x019d9cfe #todo
 XPUB_HEADER_ALT = 0x019da462 #todo
 #HEADERS_URL = "https://sound.sighash.info/blockchain_headers"
-HEADERS_URL = "http://electrumx2.tamami-foundation.org/blockchain_headers"
+#HEADERS_URL = "http://electrumx2.tamami-foundation.org/blockchain_headers"
+HEADERS_URL = "http://localhost/blockchain_headers"
 GENESIS = "ff9f1c0116d19de7c9963845e129f9ed1bfc0b376eb54fd7afa42e0d418c8bb6"
 
 def set_testnet():
@@ -90,7 +91,7 @@ def set_nolnet():
 DUST_SOFT_LIMIT = 100000
 MIN_RELAY_TX_FEE = 100000
 FEE_STEP = 10000
-MAX_FEE_RATE = 300000
+MAX_FEE_RATE = 100000
 FEE_TARGETS = [25, 10, 5, 2]
 
 COINBASE_MATURITY = 100

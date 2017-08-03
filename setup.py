@@ -62,7 +62,6 @@ setup(
         'electrum_plugins.ledger',
         'electrum_plugins.trezor',
         'electrum_plugins.digitalbitbox',
-        'electrum_plugins.trustedcoin',
         'electrum_plugins.virtualkeyboard',
     ],
     package_dir={

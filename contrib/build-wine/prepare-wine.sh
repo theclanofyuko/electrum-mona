@@ -63,7 +63,7 @@ $PYTHON -m pip install urllib3
 $PYTHON -m pip install chardet
 $PYTHON -m pip install certifi
 $PYTHON -m pip install idna
-
+$PYTHON -m pip install win_inet_pton
 
 # Install setuptools
 #wget -O setuptools.exe "$SETUPTOOLS_URL"
@@ -97,7 +97,6 @@ wine mingw-get install mingw32-libz
 
 printf "[build]\ncompiler=mingw32\n" > $WINEPREFIX/drive_c/Python27/Lib/distutils/distutils.cfg
 
-$PYTHON -m pip install win_inet_pton
 $PYTHON -m pip install dnspython
 $PYTHON -m pip install pyaes
 $PYTHON -m pip install ecdsa

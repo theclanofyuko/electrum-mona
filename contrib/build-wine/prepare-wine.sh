@@ -65,6 +65,9 @@ $PYTHON -m pip install certifi
 $PYTHON -m pip install idna
 $PYTHON -m pip install win_inet_pton
 
+# install websocket (python2)
+$PYTHON -m pip install websocket-client
+
 # Install setuptools
 #wget -O setuptools.exe "$SETUPTOOLS_URL"
 #wine setuptools.exe

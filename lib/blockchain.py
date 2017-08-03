@@ -32,7 +32,10 @@ import threading
 import bitcoin
 from bitcoin import *
 
-import lyra2re2_hash
+try:
+    import lyra2re2_hash
+except ImportError as e:
+    exit("Please run 'sudo pip install https://github.com/metalicjames/lyra2re-hash-python/archive/master.zip'")
 
 MAX_TARGET = 0xff9f1c0116d1a000000000000000000000000000000000000000000000000000
 

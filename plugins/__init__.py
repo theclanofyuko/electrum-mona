@@ -36,6 +36,5 @@ names = [
     'labels',
     'ledger',
     'trezor',
-    'trustedcoin',
     'virtualkeyboard',
 ]

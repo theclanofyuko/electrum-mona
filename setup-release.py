@@ -29,7 +29,6 @@ if sys.platform == 'darwin':
     from plistlib import Plist
     plist = Plist.fromFile('Info.plist')
     plist.update(dict(CFBundleIconFile='electrum.icns'))
-
     shutil.copy(mainscript, mainscript + '.py')
     mainscript += '.py'
     extra_options = dict(
